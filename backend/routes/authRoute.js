@@ -3,8 +3,8 @@ import {
   registerController,
   loginController,
   testController,
-} from "../../erp/backend/controllers/authController.js";
-import { isAdmin, requireSignIn } from "../../erp/backend/middlewares/authMiddleware.js";
+} from "../controllers/authController.js";
+import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js";
 
 //router object
 const router = express.Router();
