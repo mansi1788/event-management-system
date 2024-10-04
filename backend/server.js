@@ -17,7 +17,7 @@ connectDB();
 
 // Middleware for CORS
 app.use(cors({
-  origin: 'http://localhost:3000', // Your frontend URL
+  origin: 'http://localhost:3001', // Your frontend URL
 }));
 
 // Middleware for parsing JSON

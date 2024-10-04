@@ -20,7 +20,7 @@ export const registerController = async (req, res) => {
     }
     if (!address) {
       return res.send({ error: "Address is Required" });
-    }
+    } 
     //check user
     const exisitingUser = await userModel.findOne({ email });
     //exisiting user
@@ -84,7 +84,7 @@ export const loginController = async (req, res) => {
     }
     //token
     const token = await JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "15d",
     });
     res.status(200).send({
       success: true,
