@@ -2,99 +2,103 @@ import userModel from "../models/userModel.js";
 import { comparePassword, hashPassword } from "../helpers/authHelper.js";
 import JWT from "jsonwebtoken";
 
+// Register controller
 export const registerController = async (req, res) => {
   try {
-    const { name, email, password, phone, address } = req.body;
-    //validations
-    if (!name) {
-      return res.send({ error: "Name is Required" });
-    }
-    if (!email) {
-      return res.send({ error: "Email is Required" });
-    }
-    if (!password) {
-      return res.send({ error: "Password is Required" });
-    }
-    if (!phone) {
-      return res.send({ error: "Phone no is Required" });
-    }
-    if (!address) {
-      return res.send({ error: "Address is Required" });
-    } 
-    //check user
-    const exisitingUser = await userModel.findOne({ email });
-    //exisiting user
-    if (exisitingUser) {
+    const { name, email, password, phone, address, role } = req.body;
+
+    // Validations
+    if (!name) return res.send({ error: "Name is required" });
+    if (!email) return res.send({ error: "Email is required" });
+    if (!password) return res.send({ error: "Password is required" });
+    if (!phone) return res.send({ error: "Phone number is required" });
+    if (!address) return res.send({ error: "Address is required" });
+
+    // Check if user already exists
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
       return res.status(200).send({
         success: true,
-        message: "Already Register please login",
+        message: "Already registered. Please log in.",
       });
     }
-    //register user
+
+    // Hash password
     const hashedPassword = await hashPassword(password);
-    //save
-    const user = await new userModel({
+
+    // Save new user
+    const user = new userModel({
       name,
       email,
       phone,
       address,
       password: hashedPassword,
-    }).save();
+      role: role || 0, // Default role is 0 (user), role can be passed for admin or vendor
+    });
+
+    await user.save();
 
     res.status(201).send({
       success: true,
-      message: "User Register Successfully",
+      message: "User registered successfully",
       user,
     });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Errro in Registeration",
+      message: "Error in registration",
       error,
     });
   }
 };
 
-//POST LOGIN
+// Login controller
 export const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
-    //validation
+
+    // Validation
     if (!email || !password) {
       return res.status(404).send({
         success: false,
         message: "Invalid email or password",
       });
     }
-    //check user
+
+    // Check if user exists
     const user = await userModel.findOne({ email });
     if (!user) {
       return res.status(404).send({
         success: false,
-        message: "Email is not registerd",
+        message: "Email is not registered",
       });
     }
+
+    // Compare password
     const match = await comparePassword(password, user.password);
     if (!match) {
       return res.status(200).send({
         success: false,
-        message: "Invalid Password",
+        message: "Invalid password",
       });
     }
-    //token
-    const token = await JWT.sign({ _id: user._id }, process.env.JWT_SECRET, {
+
+    // Generate token
+    const token = JWT.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "15d",
     });
+
     res.status(200).send({
       success: true,
-      message: "login successfully",
+      message: "Login successful",
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
         phone: user.phone,
-        adddress: user.address,
+        address: user.address,
+        role: user.role, // Send back the role
       },
       token,
     });
@@ -105,15 +109,5 @@ export const loginController = async (req, res) => {
       message: "Error in login",
       error,
     });
-  }
-};
-
-//test controller
-export const testController = (req, res) => {
-  try {
-    res.send("Protected Routes");
-  } catch (error) {
-    console.log(error);
-    res.send({ error });
   }
 };

@@ -2,21 +2,22 @@ import express from "express";
 import {
   registerController,
   loginController,
-  testController,
 } from "../controllers/authController.js";
-import { isAdmin, requireSignIn } from "../middlewares/authMiddleware.js";
+import { isAdmin, isVendor, requireSignIn } from "../middlewares/authMiddleware.js";
 
-//router object
+// Router object
 const router = express.Router();
 
-//routing
-//REGISTER || METHOD POST
+// Register route
 router.post("/register", registerController);
 
-//LOGIN || POST
+// Login route
 router.post("/login", loginController);
 
-//test routes
-router.get("/test", requireSignIn, isAdmin, testController);
+// Test route (protected, admin only)
+router.get("/admin-test", requireSignIn, isAdmin);
+
+// Test route (protected, vendor only)
+router.get("/vendor-test", requireSignIn, isVendor);
 
 export default router;
